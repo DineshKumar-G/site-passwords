@@ -45,11 +45,10 @@
               <q-btn
                 v-if="!editingRow._id && !expanded.length"
                 round
-                color="blue"
+                color="yellow-4"
                 @click="addRow"
-                glossy
                 size="sm"
-                text-color="white"
+                text-color="grey-10"
                 icon="add"
               />
             </span>
@@ -88,7 +87,7 @@
             >
               <q-btn
                 round
-                color="secondary"
+                color="blue-4"
                 @click="editItem(props.row)"
                 glossy
                 size="sm"
@@ -103,7 +102,7 @@
                 glossy
                 size="sm"
                 text-color="white"
-                icon="delete"
+                icon="delete_forever"
               />
             </span>
             <span
@@ -112,7 +111,7 @@
             >
               <q-btn
                 round
-                color="green"
+                color="blue-4"
                 @click="saveItem()"
                 glossy
                 size="sm"
@@ -148,24 +147,29 @@
                   <span class="text-bold text-subtitle1">Linked Accounts</span>
                 </template>
                 <template v-slot:header="props">
-                  <q-tr :props="props">
+                  <q-tr :props="props" class="bg-grey-10">
                     <q-th
                       v-for="col in props.cols"
                       :key="col.name"
                       :props="props"
                     >
-                      <span v-if="col.name !== 'actions'">
+                      <span
+                        v-if="col.name !== 'actions'"
+                        class="text-yellow-4 text-bold text-subtitle2"
+                      >
                         {{ col.label }}
                       </span>
-                      <span v-else>
+                      <span
+                        v-else
+                        class="text-yellow-4 text-bold text-subtitle2"
+                      >
                         Actions
                         <q-btn
                           round
-                          color="blue"
+                          color="yellow-4"
                           @click="linkAccount()"
-                          glossy
                           size="sm"
-                          text-color="white"
+                          text-color="grey-10"
                           icon="add"
                         />
                       </span>
@@ -192,7 +196,7 @@
                         <q-btn
                           v-if="props.row.newLink"
                           round
-                          color="green"
+                          color="blue-4"
                           @click="confirmLink(props.row)"
                           glossy
                           size="sm"
@@ -207,7 +211,7 @@
                           glossy
                           size="sm"
                           text-color="white"
-                          icon="delete"
+                          icon="delete_forever"
                         />
                       </span>
                     </q-td>
