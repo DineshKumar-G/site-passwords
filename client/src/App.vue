@@ -1,69 +1,36 @@
 <template>
-  <div id="nav">
-    <!-- <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link>
-  </div>
-  <router-view /> -->
-    <h3>Text Cow. Moo</h3>
-    <code>{{ cow }}}</code>
-    <label>Custom Cow Text:</label>
-    <input v-model="text" />
-    <button @click="customCow">Show me a talking cow!</button>
-  </div>
+  <q-layout view="lHh Lpr lFf">
+    <q-page-container>
+      <SideBar :leftDrawerOpen="leftDrawerOpen"> </SideBar>
+      <Header @toggle-side-bar="toggleSideBar"> </Header>
+      <router-view class="bg-grey-3"/>
+    </q-page-container>
+  </q-layout>
 </template>
-<script>
-import { defineComponent, ref, onBeforeMount } from 'vue';
 
+<script>
+import { ref, defineComponent, computed } from "vue";
+import { useStore } from "vuex";
+import { useRouter, useRoute } from "vue-router";
+import SideBar from "@/components/SideBar.vue";
+import Header from "@/components/Header.vue";
 export default defineComponent({
+  name: "App",
+  components: {
+    SideBar,
+    Header,
+  },
   setup() {
-    const cow = ref('');
-    const text = ref('');
-    onBeforeMount(() => {
-      fetchCow();
-    });
-    const fetchCow = async () => {
-      const response = await fetch(`/api/cow`, {
-        headers: {
-          accepts: 'application/json',
-        },
-      });
-      const initialCow = await response.json();
-      cow.value = initialCow.moo;
+    const store = useStore();
+    const route = useRoute();
+    let leftDrawerOpen = ref(true);
+    const toggleSideBar = () => {
+      leftDrawerOpen.value = !leftDrawerOpen.value;
     };
-    const customCow = async () => {
-      // console.log('>>>>>>', text);
-      // const text = text.value;
-      const response = await fetch(`/api/cow/${text.value}`);
-      const custom = await response.json();
-      cow.value = custom.moo;
-      text.value = '';
+    return {
+      leftDrawerOpen,
+      toggleSideBar,
     };
-    return { customCow, cow, text };
   },
 });
 </script>
-
-import {defineComponent } from 'vue';
-
-<style lang="scss">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
-
-#nav {
-  padding: 30px;
-
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.router-link-exact-active {
-      color: #42b983;
-    }
-  }
-}
-</style>
