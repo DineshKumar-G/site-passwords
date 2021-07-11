@@ -2,6 +2,11 @@
   "name": "client",
   "version": "0.1.0",
   "private": true,
+  "root": "dist",
+  "clean_urls": true,
+  "routes": {
+    "/**": "index.html"
+  },
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
