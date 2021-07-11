@@ -1,5 +1,5 @@
 {
-  "name": "site-passwords",
+  "name": "site-passwords-backend",
   "version": "1.0.0",
   "description": "website password manager",
   "main": "index.js",
