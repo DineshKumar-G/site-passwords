@@ -1,35 +1,27 @@
 const express = require('express');
 const cowsay = require('cowsay');
 const cors = require('cors');
+const path = require('path');
+const route = require('./routes');
+const mongoose = require('./mongoose');
+const bodyParser = require('body-parser');
+
 // Create the server
 const app = express();
-// Serve our api route /cow that returns a custom talking text cow
-app.get('/api/cow/:say', cors(), async (req, res, next) => {
-  try {
-    const text = req.params.say;
-    const moo = cowsay.say({ text });
-    res.json({ moo });
-  } catch (err) {
-    next(err);
-  }
-});
-// Serve our base route that returns a Hello World cow
-app.get('/api/cow/', cors(), async (req, res, next) => {
-  try {
-    console.log('>>>>>>>>>>>');
-    const moo = cowsay.say({ text: 'Hello World!' });
-    res.json({ moo });
-  } catch (err) {
-    next(err);
-  }
-});
-const path = require('path');
-// Serve static files from the React frontend app
+
+// Serve static files from the Vue frontend app
 app.use(express.static(path.join(__dirname, 'client/dist')));
 // Anything that doesn't match the above, send back index.html
-app.get('*', (req, res) => {
+app.get('^(?!.*(api/))', (req, res) => {
   res.sendFile(path.join(__dirname + '/client/dist/index.html'));
 });
+app.use(bodyParser.json({limit: '20mb'}));
+app.use(bodyParser.urlencoded({
+  limit: '20mb',
+  extended: true
+}))
+
+app.use(route);
 // Choose the port and start the server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
