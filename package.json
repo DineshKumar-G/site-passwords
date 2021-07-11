@@ -1,0 +1,25 @@
+{
+  "name": "site-passwords",
+  "version": "1.0.0",
+  "description": "website password manager",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DineshKumar-G/site-passwords.git"
+  },
+  "author": "DineshKumar-G",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DineshKumar-G/site-passwords/issues"
+  },
+  "homepage": "https://github.com/DineshKumar-G/site-passwords#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "cowsay": "^1.5.0",
+    "express": "^4.17.1"
+  }
+}
