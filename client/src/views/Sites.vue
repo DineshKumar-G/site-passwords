@@ -18,7 +18,13 @@
     >
       <template v-slot:top>
         <q-space></q-space>
-        <q-input dense color="primary" placeholder="Search" v-model="searchText" debounce="500">
+        <q-input
+          dense
+          color="primary"
+          placeholder="Search"
+          v-model="searchText"
+          debounce="500"
+        >
           <template v-slot:append>
             <q-icon name="search" color="black"></q-icon>
           </template>
@@ -39,7 +45,7 @@
               <q-btn
                 v-if="!editingRow._id && !expanded.length"
                 round
-                color="green"
+                color="blue"
                 @click="addRow"
                 glossy
                 size="sm"
@@ -138,6 +144,9 @@
                 :pagination.sync="pagination"
                 hide-bottom
               >
+                <template v-slot:top>
+                  <span class="text-bold text-subtitle1">Linked Accounts</span>
+                </template>
                 <template v-slot:header="props">
                   <q-tr :props="props">
                     <q-th
@@ -152,7 +161,7 @@
                         Actions
                         <q-btn
                           round
-                          color="green"
+                          color="blue"
                           @click="linkAccount()"
                           glossy
                           size="sm"
@@ -359,6 +368,7 @@ export default defineComponent({
               username: '',
               password: '',
             },
+            newLink: true,
           },
         ],
       });
@@ -442,7 +452,7 @@ export default defineComponent({
 </script>
 
 <style scoped>
-div >>> .q-table__sort-icon{
+div >>> .q-table__sort-icon {
   color: white;
 }
 </style>
