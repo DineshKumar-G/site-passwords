@@ -6,7 +6,7 @@
       :columns="primaryCols"
       table-class=""
       row-key="_id"
-      table-header-class="text-yellow-4 "
+      table-header-class="text-yellow-4"
       virtual-scroll
       :virtual-scroll-item-size="48"
       :virtual-scroll-sticky-size-start="48"
@@ -186,7 +186,9 @@
                     >
                       <span v-if="col.name !== 'actions'">
                         <span v-if="props.row.newLink">
-                          <q-input v-model="newAccLink[col.name]" />
+                          <q-input
+                            v-model="newAccLink[props.pageIndex][col.name]"
+                          />
                         </span>
                         <span v-else>
                           {{ col.value }}
@@ -194,17 +196,21 @@
                       </span>
                       <span v-else class="q-pa-md q-gutter-sm">
                         <q-btn
-                          v-if="props.row.newLink"
+                          v-if="
+                            props.row.newLink &&
+                            expanded[0] !== 'newWebSite' &&
+                            !editingRow._id
+                          "
                           round
                           color="blue-4"
-                          @click="confirmLink(props.row)"
+                          @click="confirmLink(props)"
                           glossy
                           size="sm"
                           text-color="white"
                           icon="done"
                         />
                         <q-btn
-                          v-else
+                          v-else-if="expanded[0] !== 'newWebSite'"
                           round
                           color="red"
                           @click="unLinkAccount(props.key)"
@@ -230,6 +236,7 @@
 import { defineComponent, onBeforeMount, ref, watch } from 'vue';
 import _ from 'lodash';
 import API from '@/api-models/Connector';
+import { useQuasar } from 'quasar';
 
 const primaryCols = [
   {
@@ -296,14 +303,24 @@ const flyoutCols = [
   },
 ];
 export default defineComponent({
+  name: 'WebSites',
   setup() {
+    const $q = useQuasar();
+
     const rows = ref([]);
     const editingRow = ref({});
     const searchText = ref('');
     const isLoading = ref(false);
     const expanded = ref([]);
     const newAccLink = ref([]);
-
+    const defAccount = {
+      name: '',
+      secrets: {
+        username: '',
+        password: '',
+      },
+      newLink: true,
+    };
     onBeforeMount(async () => {
       await loadData();
     });
@@ -320,42 +337,90 @@ export default defineComponent({
     };
 
     const cancelEdit = async (row) => {
-      expanded.value = [];
       row.isEditing = false;
       row = row._beforeEdit;
       editingRow.value = {};
       await loadData();
+      expanded.value = [];
     };
 
     const saveItem = async () => {
       isLoading.value = true;
       if (editingRow.value._id === 'newWebSite') {
         const newRow = editingRow.value;
-        const newAccs = newRow.accounts[0];
-        console.log('>>>>', newAccs);
+        let newAccLength = 0;
+        const newAccs = [];
+        for (let vAcc of Object.values(newAccLink.value)) {
+          if (
+            vAcc.name &&
+            vAcc['secrets.username'] &&
+            vAcc['secrets.password']
+          ) {
+            newAccLength += 1;
+            newAccs.push({
+              name: vAcc.name,
+              username: vAcc['secrets.username'],
+              password: vAcc['secrets.password'],
+            });
+          }
+        }
+        if (!_.get(newRow, 'url')) {
+          $q.notify({ color: 'negative', message: 'Please add a Link!' });
+          return;
+        }
+        if (!_.get(newRow, 'title')) {
+          $q.notify({ color: 'negative', message: 'Please add a title!' });
+          return;
+        }
+        if (newAccLength < 1) {
+          $q.notify({
+            color: 'negative',
+            message:
+              'Please add all the information to save your account details!',
+          });
+          return;
+        }
+
         await API.addSite({
           ..._.pick(newRow, ['title', 'url']),
-          accounts: [
-            {
-              name: newAccs.name,
-              username: newAccs.secrets.username,
-              password: newAccs.secrets.password,
-            },
-          ],
+          accounts: newAccs,
         });
       } else {
         await API.editSite(editingRow.value);
       }
+      resetAfterAdd();
+    };
+
+    const resetAfterAdd = async () => {
       isLoading.value = false;
       editingRow.value = {};
       await loadData();
+      expanded.value = [];
+      $q.notify({
+        color: 'green',
+        message: 'Added website and account details!',
+      });
     };
 
     const deleteItem = async (row) => {
-      isLoading.value = true;
-      await API.deleteSite({ _id: row._id });
-      isLoading.value = false;
-      await loadData();
+      $q.dialog({
+        title: 'Confirm',
+        message:
+          'Are you sure you want to delete the website? All account details will be lost',
+        cancel: true,
+        persistent: true,
+      })
+        .onOk(async () => {
+          isLoading.value = true;
+          await API.deleteSite({ _id: row._id });
+          isLoading.value = false;
+          await loadData();
+          $q.notify({
+            color: 'green',
+            message: 'Deleted Website link and all account details',
+          });
+        })
+        .onCancel(() => {});
     };
 
     const addRow = () => {
@@ -365,55 +430,71 @@ export default defineComponent({
         title: '',
         totalAccounts: 0,
         isEditing: true,
-        accounts: [
-          {
-            name: '',
-            secrets: {
-              username: '',
-              password: '',
-            },
-            newLink: true,
-          },
-        ],
+        accounts: [defAccount],
       });
+      newAccLink.value.push([]);
       expanded.value = ['newWebSite'];
       editingRow.value = rows.value[0];
     };
 
     const linkAccount = async () => {
       const openedRow = _.find(rows.value, { _id: expanded.value[0] });
-      openedRow.accounts.splice(0, 0, {
-        name: '',
-        newLink: true,
-        secrets: {
-          username: '',
-          password: '',
-        },
-      });
+      openedRow.accounts.splice(0, 0, defAccount);
+      newAccLink.value.push([]);
     };
 
-    const confirmLink = async () => {
+    const confirmLink = async ({ pageIndex }) => {
       const webID = expanded.value[0];
+      const addingAccount = newAccLink.value[pageIndex];
+      if (
+        !addingAccount.name ||
+        !addingAccount['secrets.password'] ||
+        !addingAccount['secrets.username']
+      ) {
+        $q.notify({
+          color: 'negative',
+          message:
+            'Please add all the information to save your account details!',
+        });
+        return;
+      }
       await API.accountUpdate({
-        username: newAccLink.value.name,
-        password: newAccLink.value['secrets.password'],
-        name: newAccLink.value['secrets.username'],
+        username: addingAccount.name,
+        password: addingAccount['secrets.password'],
+        name: addingAccount['secrets.username'],
         _id: webID,
         op: 'link',
       });
       await loadData();
       expanded.value = [webID];
+      $q.notify({
+        color: 'green',
+        message: 'Linked new account successfully!',
+      });
     };
 
     const unLinkAccount = async (accId) => {
-      const webID = expanded.value[0];
-      await API.accountUpdate({
-        accId,
-        _id: webID,
-        op: 'unlink',
-      });
-      await loadData();
-      expanded.value = [webID];
+      $q.dialog({
+        title: 'Confirm',
+        message: 'Are you sure you want to delete the account details?',
+        cancel: true,
+        persistent: true,
+      })
+        .onOk(async () => {
+          const webID = expanded.value[0];
+          await API.accountUpdate({
+            accId,
+            _id: webID,
+            op: 'unlink',
+          });
+          await loadData();
+          expanded.value = [webID];
+          $q.notify({
+            color: 'green',
+            message: 'Deleted Account details',
+          });
+        })
+        .onCancel(() => {});
     };
 
     const loadData = async () => {
@@ -426,6 +507,10 @@ export default defineComponent({
     // watching searchText and then trigger the loadData because quasar input fields has debounce to it's v-model
     watch(searchText, () => {
       loadData();
+    });
+
+    watch(expanded, () => {
+      newAccLink.value = [[]];
     });
 
     return {

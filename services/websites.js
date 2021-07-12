@@ -35,12 +35,13 @@ const ctrl = {
       newWebsite = await newWebsite.save();
       return res.status(200).json({ msg: 'success', data: newWebsite });
     } catch (error) {
-      console.error(e);
+      console.error(error);
       next({ msg: 'Error', error });
     }
   },
 
   async getAll(req, res, next) {
+    console.log('>>>>>>>>> CAME!!');
     try {
       const { search } = _.defaults(req.query, {
         search: false,
@@ -91,10 +92,16 @@ const ctrl = {
             title: {
               $first: '$title',
             },
-            account: {
+            accounts: {
               $push: '$account',
             },
+            totalAccounts: {
+              $sum: 1,
+            },
           },
+        },
+        {
+          $sort: {_id: -1},
         },
       ]);
       const allWebSites = await Website.aggregate(pipeLine);
@@ -102,7 +109,7 @@ const ctrl = {
         .status(200)
         .json({ data: allWebSites, count: allWebSites.length });
     } catch (error) {
-      console.error(e);
+      console.error(error);
       next({ msg: 'Error', error });
     }
   },
@@ -128,7 +135,7 @@ const ctrl = {
       );
       return res.status(200).json({ msg: 'success', data: updatedObj });
     } catch (error) {
-      console.error(e);
+      console.error(error);
       next({ msg: 'Error', error });
     }
   },
