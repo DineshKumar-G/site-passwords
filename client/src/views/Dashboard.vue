@@ -1,13 +1,18 @@
 <template>
-  <div>
-    <div class="q-pa-xl row q-gutter-md justify-center">
+  <div class="window-height">
+    <div class="q-pt-xl row q-gutter-md justify-center">
       <q-card
         class="my-card text-white"
         style="background: linear-gradient(90deg, #f00b51 0%, #7366ff 100%)"
       >
         <q-card-section>
-          <div class="text-h6 text-center text-bold">
-            {{ totalSites }}
+          <div class="text-h2 text-center text-bold">
+            <vue3-autocounter
+              ref="counter"
+              :startAmount="0"
+              :endAmount="totalSites"
+              :duration="0.3"
+            />
           </div>
           <div class="text-subtitle1 text-center text-bold">Total Websites</div>
         </q-card-section>
@@ -17,21 +22,31 @@
         style="background: linear-gradient(90deg, #f00b51 0%, #7366ff 100%)"
       >
         <q-card-section>
-          <div class="text-h6 text-center text-bold">
-            {{ totalAccounts }}
+          <div class="text-h2 text-center text-bold">
+            <vue3-autocounter
+              ref="counter"
+              :startAmount="0"
+              :endAmount="totalAccounts"
+              :duration="0.3"
+            />
           </div>
           <div class="text-subtitle1 text-center text-bold">Total Accounts</div>
         </q-card-section>
       </q-card>
     </div>
-    <div class="q-pa-xl row q-gutter-md justify-center">
+    <div class="q-pa-md row q-gutter-md justify-center">
       <q-card
         @click="$router.push({ path: '/websites' })"
         class="my-card text-white cursor-pointer"
-        style="background: linear-gradient(90deg, #f00b51 0%, #7366ff 100%)"
+        style="
+          background: linear-gradient(90deg, #f00b51 0%, #7366ff 100%);
+          width: 19rem;
+        "
       >
         <q-card-section>
-          <div class="text-h6 text-center text-bold text-capitalize">{{ topSite.title }}</div>
+          <div class="text-h2 text-center text-bold text-capitalize">
+            {{ topSite.title }}
+          </div>
           <div class="text-subtitle1 text-center text-bold">Top Website</div>
         </q-card-section>
 
@@ -44,9 +59,14 @@
 </template>
 <script>
 import { defineComponent, ref, onBeforeMount } from 'vue';
+import Vue3autocounter from 'vue3-autocounter';
+
 import _ from 'lodash';
 import API from '@/api-models/Connector';
 export default defineComponent({
+  components: {
+    'vue3-autocounter': Vue3autocounter,
+  },
   setup() {
     let totalSites = ref(0);
     let totalAccounts = ref(0);
