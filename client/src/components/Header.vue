@@ -10,7 +10,7 @@
         icon="menu"
       />
 
-      <q-toolbar-title> Password Manager </q-toolbar-title>
+      <q-toolbar-title class="title text-bold text-italic"> Password Manager </q-toolbar-title>
     </q-toolbar>
     <q-tabs
       v-model="tab"
@@ -32,12 +32,12 @@
 </template>
 
 <script>
-import { defineComponent, ref, watch, toRefs } from "vue";
-import { useRouter, useRoute } from "vue-router";
-import _ from "lodash";
-import { routeOpts } from "@/constants/pages";
+import { defineComponent, ref, watch, toRefs } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import _ from 'lodash';
+import { routeOpts } from '@/constants/pages';
 export default defineComponent({
-  name: "Header",
+  name: 'Header',
   components: {},
   setup(props, context) {
     const router = useRouter();
@@ -49,7 +49,7 @@ export default defineComponent({
     watch(route, (val) => {
       tab.value = _.get(
         _.find(routeOpts, { path: route.path }),
-        "name",
+        'name',
         routeOpts[0].name
       );
     });
@@ -62,4 +62,11 @@ export default defineComponent({
 });
 </script>
 
-<style></style>
+<style scoped>
+.title {
+  font-size: 1.5rem;
+  background: -webkit-linear-gradient(90deg, #fffc00 0%, #ffffff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: rgb(0 0 0 / 0%);
+}
+</style>
