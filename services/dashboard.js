@@ -4,7 +4,7 @@ const Website = require('../models/website');
 const ctrl = {
   async getMetrics(req, res, next) {
     try {
-      const [totalSites, totalAccounts, topSite] = await Promise.all([
+      const [totalSites, totalAccounts, [topSite]] = await Promise.all([
         Website.count({}),
         Account.count({}),
         Website.aggregate([

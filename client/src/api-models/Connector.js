@@ -48,4 +48,14 @@ export default {
       console.log('Error', e);
     }
   },
+
+  async getMetrics() {
+    try {
+      const allSites = await req.get('/');
+      console.log('>>', allSites.data)
+      return allSites.data;
+    } catch (e) {
+      console.log('Error', e);
+    }
+  },
 };

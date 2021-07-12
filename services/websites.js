@@ -41,7 +41,6 @@ const ctrl = {
   },
 
   async getAll(req, res, next) {
-    console.log('>>>>>>>>> CAME!!');
     try {
       const { search } = _.defaults(req.query, {
         search: false,

@@ -208,7 +208,7 @@
                           "
                           round
                           color="blue-4"
-                          @click="confirmLink(props)"
+                          @click="confirmLink(props.pageIndex)"
                           glossy
                           size="sm"
                           text-color="white"
@@ -312,13 +312,13 @@ export default defineComponent({
   setup() {
     const $q = useQuasar();
 
-    const rows = ref([]);
-    const editingRow = ref({});
-    const searchText = ref('');
-    const isLoading = ref(false);
-    const expanded = ref([]);
-    const newAccLink = ref([]);
-    const defAccount = {
+    let rows = ref([]);
+    let editingRow = ref({});
+    let searchText = ref('');
+    let isLoading = ref(false);
+    let expanded = ref([]);
+    let newAccLink = ref([]);
+    let defAccount = {
       name: '',
       secrets: {
         username: '',
@@ -377,46 +377,43 @@ export default defineComponent({
 
     const saveItem = async () => {
       isLoading.value = true;
-      if (editingRow.value._id === 'newWebSite') {
-        const newRow = editingRow.value;
-        let newAccLength = 0;
-        const newAccs = [];
-        for (let vAcc of Object.values(newAccLink.value)) {
-          if (
-            vAcc.name &&
-            vAcc['secrets.username'] &&
-            vAcc['secrets.password']
-          ) {
-            newAccLength += 1;
-            newAccs.push({
-              name: vAcc.name,
-              username: vAcc['secrets.username'],
-              password: vAcc['secrets.password'],
-            });
-          }
-        }
-        if (!_.get(newRow, 'url')) {
-          $q.notify({ color: 'negative', message: 'Please add a Link!' });
-          return;
-        }
-        if (!_.get(newRow, 'title')) {
-          $q.notify({ color: 'negative', message: 'Please add a title!' });
-          return;
-        }
-        if (newAccLength < 1) {
-          $q.notify({
-            color: 'negative',
-            message:
-              'Please add all the information to save your account details!',
+      const newRow = editingRow.value;
+      let newAccLength = newRow._id === 'newWebSite' ? 0 : 1;
+      const newAccs = [];
+      for (let vAcc of Object.values(newAccLink.value)) {
+        if (vAcc.name && vAcc['secrets.username'] && vAcc['secrets.password']) {
+          newAccLength += 1;
+          newAccs.push({
+            name: vAcc.name,
+            username: vAcc['secrets.username'],
+            password: vAcc['secrets.password'],
           });
-          return;
         }
-
+      }
+      if (!_.get(newRow, 'url')) {
+        $q.notify({ color: 'negative', message: 'Please add a Link!' });
+        return;
+      }
+      if (!_.get(newRow, 'title')) {
+        $q.notify({ color: 'negative', message: 'Please add a title!' });
+        return;
+      }
+      if (newAccLength < 1) {
+        $q.notify({
+          color: 'negative',
+          message:
+            'Please add all the information to save your account details!',
+        });
+        return;
+      }
+      if (editingRow.value._id === 'newWebSite') {
         await API.addSite({
           ..._.pick(newRow, ['title', 'url']),
           accounts: newAccs,
         });
       } else {
+        for (let i = 0; i < newAccs.length; i++)
+          await performLink(newAccLink.value[i], newRow._id);
         await API.editSite(editingRow.value);
       }
       resetAfterAdd();
@@ -461,9 +458,19 @@ export default defineComponent({
       newAccLink.value.push([]);
     };
 
-    const confirmLink = async ({ pageIndex }) => {
+    const confirmLink = async (idx) => {
       const webID = expanded.value[0];
-      const addingAccount = newAccLink.value[pageIndex];
+      const addingAccount = newAccLink.value[idx];
+      await performLink(addingAccount, webID);
+      await loadData();
+      expanded.value = [webID];
+      $q.notify({
+        color: 'green',
+        message: 'Linked new account successfully!',
+      });
+    };
+
+    const performLink = async (addingAccount, webID) => {
       if (
         !addingAccount.name ||
         !addingAccount['secrets.password'] ||
@@ -482,12 +489,6 @@ export default defineComponent({
         name: addingAccount['secrets.username'],
         _id: webID,
         op: 'link',
-      });
-      await loadData();
-      expanded.value = [webID];
-      $q.notify({
-        color: 'green',
-        message: 'Linked new account successfully!',
       });
     };
 

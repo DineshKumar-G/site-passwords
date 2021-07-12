@@ -1,21 +1,21 @@
 import { createRouter, createWebHistory } from "vue-router";
-// import Dashboard from '@/views/Dashboard.vue';
+import Dashboard from '@/views/Dashboard.vue';
 import Sites from "@/views/Sites.vue";
 
 const routes = [
   {
     path: "/",
-    name: "Sites",
-    component: Sites,
+    name: "Dashboard",
+    component: Dashboard,
   },
   {
-    path: "/sites",
+    path: "/websites",
     name: "Sites",
     component: Sites,
   },
   {
     path: "/:catchAll(.*)",
-    component: Sites,
+    component: Dashboard,
   },
 ];
 
