@@ -40,7 +40,7 @@
         class="my-card text-white cursor-pointer"
         style="
           background: linear-gradient(90deg, #f00b51 0%, #7366ff 100%);
-          width: 19rem;
+          min-width: 19rem;
         "
       >
         <q-card-section>
