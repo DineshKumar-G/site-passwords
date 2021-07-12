@@ -73,7 +73,12 @@
           <q-td v-for="col in props.cols" :key="col.name" :props="props">
             <span v-if="col.name !== 'actions'">
               <span v-if="!props.row.isEditing || !col.editable">
-                {{ col.value }}
+                <a :href="col.value" target="_blank" v-if="col.name === 'url'">
+                  {{ col.value }}
+                </a>
+                <span v-else>
+                  {{ col.value }}
+                </span>
               </span>
               <span v-else-if="col.editable">
                 <q-input v-model="editingRow[col.field]" />
@@ -88,7 +93,7 @@
               <q-btn
                 round
                 color="blue-4"
-                @click="editItem(props.row)"
+                @click="editWebSite(props.row)"
                 glossy
                 size="sm"
                 text-color="white"
@@ -98,7 +103,7 @@
               <q-btn
                 round
                 color="red"
-                @click="deleteItem(props.row)"
+                @click="deleteWebSite(props.row)"
                 glossy
                 size="sm"
                 text-color="white"
@@ -321,11 +326,37 @@ export default defineComponent({
       },
       newLink: true,
     };
-    onBeforeMount(async () => {
-      await loadData();
+
+    onBeforeMount(() => {
+      loadData();
     });
 
-    const editItem = (row) => {
+    // List view populate
+    const loadData = async () => {
+      isLoading.value = true;
+      const { data } = await API.getSites({ search: searchText.value });
+      rows.value = data;
+      isLoading.value = false;
+    };
+
+    // Adding Website
+    // Below functions just adds a empty row, saving code is resued from edit operation
+    const addRow = () => {
+      rows.value.splice(0, 0, {
+        _id: 'newWebSite',
+        url: '',
+        title: '',
+        totalAccounts: 0,
+        isEditing: true,
+        accounts: [defAccount],
+      });
+      newAccLink.value.push([]);
+      expanded.value = ['newWebSite'];
+      editingRow.value = rows.value[0];
+    };
+
+    // Editing Website
+    const editWebSite = (row) => {
       expanded.value = [row._id];
       row.isEditing = true;
       row._beforeEdit = row;
@@ -402,7 +433,7 @@ export default defineComponent({
       });
     };
 
-    const deleteItem = async (row) => {
+    const deleteWebSite = async (row) => {
       $q.dialog({
         title: 'Confirm',
         message:
@@ -423,20 +454,7 @@ export default defineComponent({
         .onCancel(() => {});
     };
 
-    const addRow = () => {
-      rows.value.splice(0, 0, {
-        _id: 'newWebSite',
-        url: '',
-        title: '',
-        totalAccounts: 0,
-        isEditing: true,
-        accounts: [defAccount],
-      });
-      newAccLink.value.push([]);
-      expanded.value = ['newWebSite'];
-      editingRow.value = rows.value[0];
-    };
-
+    // Account linking operations.
     const linkAccount = async () => {
       const openedRow = _.find(rows.value, { _id: expanded.value[0] });
       openedRow.accounts.splice(0, 0, defAccount);
@@ -497,13 +515,6 @@ export default defineComponent({
         .onCancel(() => {});
     };
 
-    const loadData = async () => {
-      isLoading.value = true;
-      const { data } = await API.getSites({ search: searchText.value });
-      rows.value = data;
-      isLoading.value = false;
-    };
-
     // watching searchText and then trigger the loadData because quasar input fields has debounce to it's v-model
     watch(searchText, () => {
       loadData();
@@ -521,7 +532,7 @@ export default defineComponent({
       expanded,
       isLoading,
       searchText,
-      deleteItem,
+      deleteWebSite,
       primaryCols,
       addRow,
       cancelEdit,
@@ -530,7 +541,7 @@ export default defineComponent({
       saveItem,
       flyoutCols,
       loadData,
-      editItem,
+      editWebSite,
       pagination: {
         page: 1,
         rowsPerPage: 0,
