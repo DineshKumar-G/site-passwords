@@ -11,10 +11,7 @@ const app = express();
 
 // Serve static files from the Vue frontend app
 app.use(express.static(path.join(__dirname, 'client/dist')));
-// Anything that doesn't match the above, send back index.html
-app.get('^(?!.*(api/))', (req, res) => {
-  res.sendFile(path.join(__dirname + '/client/dist/index.html'));
-});
+
 app.use(bodyParser.json({ limit: '20mb' }));
 app.use(
   bodyParser.urlencoded({
@@ -24,8 +21,14 @@ app.use(
 );
 app.use(cors());
 app.use(route);
+
+// Anything that doesn't match the above, send back index.html
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname + '/client/dist/index.html'));
+});
+
 // Choose the port and start the server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5050;
 app.listen(PORT, () => {
   console.log(`Mixing it up on port ${PORT}`);
 });
