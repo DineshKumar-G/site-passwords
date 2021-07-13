@@ -59,6 +59,7 @@
 </template>
 <script>
 import { defineComponent, ref, onBeforeMount } from 'vue';
+import { useQuasar } from 'quasar';
 import Vue3autocounter from 'vue3-autocounter';
 
 import _ from 'lodash';
@@ -68,16 +69,20 @@ export default defineComponent({
     'vue3-autocounter': Vue3autocounter,
   },
   setup() {
+    const $q = useQuasar();
+
     let totalSites = ref(0);
     let totalAccounts = ref(0);
     let topSite = ref({});
 
     onBeforeMount(async () => {
+      $q.loading.show();
       ({
         totalSites: totalSites.value,
         totalAccounts: totalAccounts.value,
         topSite: topSite.value,
       } = await API.getMetrics());
+      $q.loading.hide();
     });
 
     return {
